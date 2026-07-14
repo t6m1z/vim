@@ -1,0 +1,2108 @@
+" An example for a vimrc file.
+"
+" Last change:  2010 Feb 3
+"
+
+" When started as "evim", evim.vim will already have done these settings.
+if v:progname =~? "evim"
+  finish
+endif
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" set use vim directory
+let g:vimdir = "$HOME/.vim"
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Use Vim settings, rather then Vi settings (much better!).
+" This must be first, because it changes other options as a side effect.
+set nocompatible
+
+" valid color: this means :source $VIMRUNTIME/syntax/syntax.vim
+syntax on
+
+" allow backspacing over everything in insert mode
+set backspace=indent,eol,start
+
+if !has('gui_running')
+  set term=builtin_xterm " color for console
+endif
+set viminfo+=c      " .viminfo encoding
+set history=512     " keep 50 lines of command line history
+set directory=~/tmp,/tmp,/var/tmp,.     " swap files directory
+if has('gui_running')
+  set directory=C:\\Temp,.       " swap files directory
+endif
+set undolevels=1024 " undo time.
+set ruler           " show the cursor position all the time
+set showcmd         " display incomplete commands
+set autoindent      " always set autoindenting on
+set copyindent      " copy indent
+set t_ti= t_te=     " do not restore screen
+set tabstop=4 shiftwidth=4 softtabstop=0    " tabstop
+set smartindent     " auto indent
+set smarttab        " indent 'shiftwidth'
+set expandtab       " number of spaces to insert a <Tab>
+set wrap            " width of a window turn it down
+set wrapscan        " come back first search till the last
+set hlsearch        " enable hilght search result
+set ignorecase      " When I search it, I distinguish a capital letter, a small letter
+set nobackup        " not make backup before overwrite of a file
+set nowritebackup   " not make backup before overwrite of a file
+set ttyfast         " High-speed terminal connection
+set title           " Change window title
+set listchars=tab:>-,eol:$,trail:<  " charctor format on list
+set smartcase       " Override the 'ignorecase' option if the search pattern contains upper case charcters
+set showmatch       " display a parenthesis to support at the time of the parenthesis input
+set showmode        " display commands inputting in status
+set suffixes+=.orig,.rej,.class,.exe,.bin
+set noerrorbells    " no Beeps when you goof (not on every terminal)
+set norestorescreen " no Contents of a console screen are restored after having finished Vim
+set wildmenu        " display candidate supplement
+set wildignorecase  " case is ignored when completing file names and directories.
+set wildchar=<TAB>  " command mode completion
+"set wildmode=longest,list
+set wildmode=list:longest,full " command mode completion
+"set cursorline      " cursorline
+set nocursorline    " no cursor line
+set nocursorcolumn  " no cursor column
+set nofixeol        " no fixendofline
+set autoread        " auto read
+set autowrite       " no Write at every shell escape (useful when compiling from within vi)
+set laststatus=2    " alway set status line
+set scrolloff=2     " minimum line in the top or down cursor
+set t_Co=256        " for 256 colors
+"set paste           " paste mode
+set pastetoggle=<F11> " paste toggle
+set noequalalways    " No auto size window
+set novisualbell     " No visualbell
+set noincsearch     " No incsearch
+set foldmethod=marker " Fold Method
+set textwidth=0      " textwidth is 0: no auto line return
+set nrformats-=octal " CTRL-A,CTRL-X commands ignore octal
+set commentstring=\ //%s\ " comment string
+set matchtime=1      " Tenths of a second to show the matching paren
+set formatoptions=cqlM
+set undofile         " undo history for all files
+set undodir=~/.vimundo " undo dir
+
+" □とか○の文字があってもカーソル位置がずれないようにする
+"if exists('&ambiwidth')
+"    set ambiwidth=double
+"endif
+
+" East Asian Ambiguous Width: 曖昧な文字幅を全角にする
+" ↑と同じじゃん
+if exists('&ambw')
+    set ambw=double
+endif
+" East Asian Ambiguous Width: 修正ロケール(UTF-8-EAW-CONSOLE)の利用
+" これだとckだといいけどmintty,windows terminalでおかしくなる
+"source $HOME/.vim/_tools/eaw-console.vim
+
+
+" hostname --------------------------------------------------------------------
+let g:hname = split(hostname(), '\.')[0]
+
+" statusline "{{{
+" %n: バッファ番号
+" %f: ファイル名
+" %m: 修正フラグ[+]/[-]
+" %r: 読み込み専用フラグ[RO]
+" %w: プレビューウィンドウフラグ[Preview]
+" %=: 左寄せと右寄せの区切り
+" %c: カラム番号
+" %V: 画面上のヴァーチャルカラム番号: -{num} %cと等しいと表示されない
+" %l: カーソル行番号
+" %L: バッファ総行数
+" %P: カーソル行の%表示
+" %[1-9]* %*: 強調表示グループを User{N} に設定する "}}}
+function! FileStatus() "{{{
+    let str = ''
+    let str = str . '[' . &fileformat . ']'
+    if has('multi_byte') && &fileencoding != ''
+        let str = str . '[' . &fileencoding . ']'
+    endif
+    let str = str . '<' . &filetype . '>'
+    return str
+endfunction "}}}
+if g:hname == 'STYLEFREE364-PC' || g:hname == 'STYLEFREE436-PC'
+    function! GitBranch()
+        let branch = fugitive#statusline()
+        "let branch = '%1*' . fugitive#statusline() . '%*'
+        return branch
+    endfunction
+endif
+"hi User1 ctermfg=white ctermbg=gray win32では使用できない？
+"set statusline=[%n]\ %f\ %(\ %M%R%H)%)\=%{FileStatus()}\ Pos=<%l\,%c%V>\ ASCII=%b\ HEX=%B
+"set statusline=[%n]\ %f\ \ %m%r%h%w%{FileStatus()}\ ASCII=%b\ HEX=0x%B%=\ Pos=%c%V\,%l/%L(%P)
+if g:hname == 'STYLEFREE364-PC' || g:hname == 'STYLEFREE436-PC'
+	set statusline=%n:\ %f\ %m%r%w%{FileStatus()}\ %=\ %{GitBranch()}\ %c%V\,%l/%L
+else
+	set statusline=%n:\ %f\ \ %m%r%w%{FileStatus()}\ %=\ Pos=%c%V\,%l/%L(%P)
+endif
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" encoding
+" 端末の出力に用いられるエンコーディングを指定する(指定がなければencodingが使用される)
+"set termencoding=utf-8
+
+" vimの内部で使用されるエンコーディングを指定する
+set encoding=utf-8
+
+" 改行コードの自動認識
+set fileformats=unix,dos,mac
+
+" そのバッファのファイルのエンコーディングを指定する
+" これに encoding
+" と異なる値が設定されていた場合、ファイルの読み書き時に文字コードの変換が行なわれる
+"set fileencoding=utf-8
+
+" 既存のファイルを編集する際に想定すべき文字コードのリストを
+" カンマ区切りで列挙したものを指定する
+" 左から最初に成功したエンコードがfileencodingに設定される
+" set fileencodings=ucs-bom,iso-2022-jp-3,iso-2022-jp,eucjp-ms,euc-jisx0213,euc-jp,sjis,cp932,cp949,euc-kr,utf-8,utf-16,utf-16le
+set fileencodings=utf-8,sjis,cp932,iso-2022-jp-3,iso-2022-jp,utf-16le,utf-16,ucs-bom,eucjp-ms,euc-jisx0213,euc-jp,cp949,euc-kr
+
+" http://www.kawaz.jp/pukiwiki/?vim#cb691f26 "{{{
+"if has('win32unix')
+"  set termencoding=utf-8
+"  set encoding=utf-8
+"  set fileencoding=utf-8
+"  set fileencodings=utf-8,cp932
+"endif
+
+"if &encoding !=# 'utf-8'
+"  set encoding=japan
+"  set fileencoding=japan
+"endif
+
+"if has('iconv')
+"  let s:enc_euc = 'euc-jp'
+"  let s:enc_jis = 'iso-2022-jp'
+   "iconvがeucJP-msに対応しているかをチェック
+"  if iconv("\x87\x64\x87\x6a", 'cp932', 'eucjp-ms') ==# "\xad\xc5\xad\xcb"
+"    let s:enc_euc = 'eucjp-ms'
+"    let s:enc_jis = 'iso-2022-jp-3'
+   "iconvがJISX0213に対応しているかをチェック
+"  elseif iconv("\x87\x64\x87\x6a", 'cp932', 'euc-jisx0213') ==# "\xad\xc5\xad\xcb"
+"    let s:enc_euc = 'euc-jisx0213'
+"    let s:enc_jis = 'iso-2022-jp-3'
+"  endif
+   "fileencodingsを構築
+"  if &encoding ==# 'utf-8'
+"    let s:fileencodings_default = &fileencodings
+"    let &fileencodings = s:enc_jis .','. s:enc_euc .',cp932'
+"    let &fileencodings = &fileencodings .','. s:fileencodings_default
+"    unlet s:fileencodings_default
+"  else
+"    let &fileencodings = &fileencodings .','. s:enc_jis
+"    set fileencodings+=utf-8,ucs-2le,ucs-2
+"    if &encoding =~# '^\(euc-jp\|euc-jisx0213\|eucjp-ms\)$'
+"      set fileencodings+=cp932
+"      set fileencodings-=euc-jp
+"      set fileencodings-=euc-jisx0213
+"      set fileencodings-=eucjp-ms
+"      let &encoding = s:enc_euc
+"      let &fileencoding = s:enc_euc
+"    else
+"      let &fileencodings = &fileencodings .','. s:enc_euc
+"    endif
+"  endif
+   "定数を処分
+"  unlet s:enc_euc
+"  unlet s:enc_jis
+"endif "}}}
+
+"set fileencoding=cp932
+"let $LANG = 'ja'
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" key maps --------------------------------------------------------------------
+"
+" shifted function keys
+"map <Esc>[23~ <S-F1> " used <F11>
+"map <Esc>[24~ <S-F2> " used <F12>
+map <Esc>[25~ <S-F3>
+map <Esc>[26~ <S-F4>
+map <Esc>[28~ <S-F5>
+map <Esc>[29~ <S-F6>
+map <Esc>[31~ <S-F7>
+map <Esc>[32~ <S-F8>
+map <Esc>[33~ <S-F9>
+map <Esc>[34~ <S-F10>
+map <Esc>[23$ <S-F11>
+map <Esc>[24$ <S-F12>
+map <Esc>[23~ <F11>
+map <Esc>[24~ <F12>
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" normal mode ----------------------------------------------------------------
+" Ignore <F1> to help
+nnoremap <F1> <Nop>
+" Ignore 'K'  to man
+nnoremap K <Nop>
+" Ignore '<C-v>' to visual-block
+"nnoremap <C-v> <Nop>
+
+" Ctrl key
+"set t_ku=<Up> t_kd=<Down> t_kr=<Right> t_kl=<Left>
+noremap  Oa <Up>
+noremap! Oa <Up>
+noremap  Ob <Down>
+noremap! Ob <Down>
+noremap  Oc <Right>
+noremap! Oc <Right>
+noremap  Od <Left>
+noremap! Od <Left>
+
+" C-H, C-D
+"set t_kh=^[[1~ t_kD=^[[3~
+
+" use Q for formatting
+nnoremap Q gq
+
+" key chagne for tab operation
+nnoremap <F3> :<C-u>tabnext<CR>
+nnoremap <F2> :<C-u>tabprevious<CR>
+nnoremap <Space>t :<C-u>tabnew<Space>
+" tabm(ove) n
+nnoremap t0 :<C-u>tabmove 0<CR>
+nnoremap t1 :<C-u>tabmove 1<CR>
+nnoremap t2 :<C-u>tabmove 2<CR>
+nnoremap t3 :<C-u>tabmove 3<CR>
+nnoremap t4 :<C-u>tabmove 4<CR>
+nnoremap t5 :<C-u>tabmove 5<CR>
+nnoremap t6 :<C-u>tabmove 6<CR>
+nnoremap t7 :<C-u>tabmove 7<CR>
+" tabclose, tabfirst, tablast
+nnoremap tc :<C-u>tabclose<CR>
+nnoremap tf :<C-u>tabfirst<CR>
+nnoremap tl :<C-u>tablast<CR>
+nnoremap g0 :<C-u>tabfirst<CR>
+nnoremap gl :<C-u>tablast<CR>
+
+function! DeleteTabRight() "{{{
+    let tabnum = tabpagenr('$')
+    let current = tabpagenr()
+    if tabnum == current
+        call EchoErr("Current tab is rightmost")
+        return
+    endif
+    for n in range(tabnum,current+1,-1)
+        "echo "n: " . n
+        execute "tabclose " . n
+    endfor
+endfunction "}}}
+nnoremap tb :call DeleteTabRight()<CR>
+
+" line number toggle
+nnoremap <Space>n :<C-u>setlocal number! number?<CR>
+" display list toggle
+nnoremap <Space>l :<C-u>setlocal list! list?<CR>
+" paste mode toggle
+nnoremap <Space>p :<C-u>setlocal paste! paste?<CR>
+" cursorline toggle
+nnoremap <Space>i :<C-u>setlocal cursorline! cursorline?<CR>
+" expandtab toggle
+nnoremap <Space>e :<C-u>setlocal expandtab! expandtab?<CR>
+
+" change encoding
+nnoremap ,u :<C-u>setlocal fileencoding=utf-8<CR>
+"nnoremap ,s :<C-u>setlocal fileencoding=cp932<CR>
+nnoremap ,s :<C-u>edit ++enc=sjis<CR>
+nnoremap ,8 :<C-u>edit ++enc=utf-8<CR>
+nnoremap ,6 :<C-u>edit ++enc=utf-16le<CR>
+nnoremap ,9 :<C-u>edit ++enc=cp932<CR>
+"nnoremap ,e :<C-u>edit ++enc=euc-jp<CR>
+
+" close preview window
+nnoremap <Space>c :<C-u>pclose<CR>
+
+" delete end of white space in line
+function! DelEWS() "{{{
+    try
+        %s/\s\+$//g
+        call histdel('/',-1) " do not leave in history
+    catch /E486:/
+    endtry
+    nohlsearch
+endfunction "}}}
+nnoremap <Space>qw :<C-u>call DelEWS()<CR>
+
+" delete blank line
+function! DelBL() "{{{
+    try
+        g/^$/d
+        call histdel('/',-1) " do not leave in history
+    catch /E486:/
+    endtry
+    nohlsearch
+endfunction "}}}
+nnoremap <Space>qs :<C-u>call DelBL()<CR>
+
+" delete only white space line
+function! DelWS() "{{{
+    try
+        %s/^\s*\n/\r/g
+        call histdel('/',-1) " do not leave in history
+    catch /E486:/
+    endtry
+    nohlsearch
+endfunction "}}}
+nnoremap <silent> S :call DelWS()<CR>
+
+" diffsplit
+nnoremap vt :<C-u>vertical diffsplit<Space>
+
+" buffers
+nnoremap B  :<C-u>buffers<CR>
+nnoremap <Leader>b1 :<C-u>buffer1<CR>
+nnoremap <Leader>b2 :<C-u>buffer2<CR>
+nnoremap <Leader>b3 :<C-u>buffer3<CR>
+nnoremap <Leader>b4 :<C-u>buffer4<CR>
+
+" .vimrc
+nnoremap <silent> <Space>ve :<C-u>edit $MYVIMRC<CR>
+nnoremap <silent> <Space>vr :<C-u>source $MYVIMRC<CR>:edit!<CR>
+
+" insert 1 space line
+nnoremap O o<Esc>
+
+" next file
+nnoremap <C-n> :<C-u>next<CR>
+" prev file
+nnoremap <C-p> :<C-u>prev<CR>
+" delete all lines
+nnoremap <Leader>d :<C-u>%d<CR>
+" prev buffer
+nnoremap P :<C-u>edit #<CR>
+
+" 検索語を画面の真中にする
+"nnoremap n nzz
+"nnoremap N Nzz
+"nnoremap * *zz
+"nnoremap # #zz
+
+" H,Lでカーソルを先頭に
+nnoremap H H0
+nnoremap L L0
+
+" 'J'で1文字消す (<C-e>はSmooth-scrollと被るのでだめ)
+" formatoptions+=M にしたから要らない
+"nnoremap <C-e> Jx
+"nnoremap <Leader>j Jx
+nnoremap gJ Jx
+
+" split window
+nnoremap <F12> :<C-u>split<CR>
+
+" +10,5 line
+nnoremap <F9> <C-w>10+
+nnoremap <Space><F9> <C-w>5+
+" -10,5 line
+nnoremap <F10> <C-w>10-
+nnoremap <Space><F10> <C-w>5-
+
+" +10 culumn
+nnoremap <Leader><F9> <C-w>10>
+" -10 culumn
+nnoremap <Leader><F10> <C-w>10<
+
+" move window
+"nnoremap <Space>w <C-w>w
+"nnoremap <F11>  <C-w>w
+nnoremap <Tab> <C-w>w
+"nnoremap <S-Tab>  <C-w>W
+nnoremap <S-Tab> <C-w><S-w>
+nnoremap <C-j> <C-w>j
+nnoremap <C-k> <C-w>k
+
+" swap window
+nnoremap <F8> <C-w>x <C-w>w
+
+" resize window
+nnoremap <Space>= <C-w>=
+
+" scrool upper 1page
+nnoremap ,k         Hz-0
+nnoremap <PageUp>   Hz-M
+
+" scrool bottom 1page
+nnoremap ,l         Lz<CR>0
+nnoremap <PageDown> Lz<CR>M
+
+" smooth-scroll
+"map <PageDown> <C-F>
+"map <PageUp>   <C-B>
+
+" next, prev funciton
+nnoremap [[ [m
+nnoremap ]] ]m
+
+" show full path and copy to clipboard
+function! PathClip() "{{{
+    "execute 'normal 1<C-g>'
+    "let @* = substitute(expand('%'),$HOME,'~','')
+    "execute 'normal "*y'
+    ":file = CTRL-G
+    if has('gui_running')
+        let f = expand('%:p')
+        let @* = f
+        execute 'normal "*y'
+        echo f
+    elseif has('clipboard')
+        let @* = substitute(expand('%'),$HOME,'~','')
+        execute 'normal "*y'
+        file
+    else
+        file
+    endif
+endfunction "}}}
+nnoremap <silent> <C-g> :<C-u>call PathClip()<CR>
+
+" add start before line's end
+nnoremap <Leader>e kA
+
+" quit
+"nnoremap <Leader>q :<C-u>quit<CR>
+nnoremap qq :<C-u>quit<CR>
+
+" browse oldfiles
+":browse oldfiles -> prompt to enter a file number.
+":oldfiles -> no prompt.
+nnoremap ,b :<C-u>browse oldfiles<CR>
+
+"nnoremap ,n :<C-u>nohlsearch<CR>
+nnoremap <Space>h :<C-u>nohlsearch<CR>
+
+" reload
+nnoremap <silent> <S-F5> :<C-u>edit!<CR>
+    \ :<C-u>echo 'reloaded.'<CR>
+    "\ :<C-u>QuickhlReloadColors<CR>
+
+" write
+nnoremap <C-s> :<C-u>write<CR>
+
+" only
+nnoremap <C-o> :<C-u>only<CR>
+
+" Ignore <C-Left><C-Right><C-Up><C-Down>
+"nnoremap <C-Left>   <Nop>
+"nnoremap <C-Right>  <Nop>
+"nnoremap <C-Up>     <Nop>
+"nnoremap <C-Down>   <Nop>
+
+" '('で現在カーソルの関数の先頭をプレビュー
+" http://subtech.g.hatena.ne.jp/motemen/?word=*[Vim]
+function! PreviewOpenBrace() "{{{
+    let l:pos = getpos('.')
+    if l:pos == get(s:, 'last_pos', [])
+        let l:count = s:last_count + 1
+    else
+        let l:count = v:count1
+    endif
+    pclose
+    pedit
+    wincmd p
+    execute 'normal!' l:count . '[{'
+    setlocal cursorline
+    wincmd p
+    let s:last_count = l:count
+    let s:last_pos   = l:pos
+endfunction "}}}
+nnoremap <buffer> <silent> ( :<C-U>call PreviewOpenBrace()<CR>
+
+" select tabpage by tab number
+function! TabList() "{{{
+    " require +dialog_con
+    if has('dialog_con') != 1
+        call EchoErr("require +dialog_con")
+        return
+    endif
+
+    " if no tabpages, don't work
+    let tabpages = tabpagenr('$')
+    if tabpages == 1
+    	echo "No tabpages."
+    	return
+    endif
+
+    " show tab list by 'tabs' command
+    let list = ''
+    " redirect messages to variable
+    redir => list
+    tabs
+    redir END
+    echo "\n"
+
+    " input tab number
+    echohl Bold
+    let choice = input("Select Tab Number: ")
+    echohl None
+    "echo "choice: " . choice
+
+    " select tabpage
+    if 0 < choice && choice <= tabpages
+        execute "tabnext " . choice
+    "else
+    "    call EchoErr("invalid Number: " . choice)
+    endif
+endfunction "}}}
+nnoremap <silent> T :<C-u>call TabList()<CR>
+
+" insert date time
+function! NowDateTime() "{{{
+    let d = strftime('%Y-%m-%d %H:%M:%S')
+    execute ":normal o" . d
+    execute ":normal 0"
+endfunction "}}}
+nnoremap ,d :<C-u>call NowDateTime()<CR>
+
+" open :help <cword>
+function! OpenHelp() "{{{
+    let w = expand('<cword>')
+    try
+        execute ":help " . w
+    catch /E149:/
+    endtry
+endfunction "}}}
+nnoremap <Space>? :<C-u>call OpenHelp()<CR>
+
+" 隣のタブへ移動
+"function! TabNeighbor(cmd) "{{{
+"    " tabpagenr()は1からだけど、tabmoveには0から指定する
+"    let cur = tabpagenr() - 1
+"    let max = tabpagenr('$') - 1
+"    if a:cmd == 'prev'
+"        let move = cur - 1
+"        if move < 0
+"            let move = max
+"        endif
+"    elseif a:cmd == 'next'
+"        let move = cur + 1
+"        if max < move
+"            let move = 0
+"        endif
+"    else
+"        "echo 'else :' . a:cmd
+"        return
+"    endif
+"    echo 'TabNeighbor ' . move
+"    execute 'tabmove ' . move
+"endfunction "}}}
+"nnoremap tn :<C-u>call TabNeighbor('next')<CR>
+"nnoremap tp :<C-u>call TabNeighbor('prev')<CR>
+nnoremap tn :<C-u>tabmove+1<CR>
+nnoremap tp :<C-u>tabmove-1<CR>
+
+" 現在のバッファを新しいタブで開いて現在のバッファ(ウィンドウ)を閉じる
+function! TabNewClose() "{{{
+    "if tabpagenr('$') == 1
+        "echo "no tabs"
+        "return
+    "endif
+    "let tabn = tabpagenr()
+    "let cur = expand('%')
+    "echo 'cur: ' . cur
+    "execute 'tabnew ' . expand('%')
+    " :tab splitでできる
+    tab split
+    " tabpagenr() の winnr() にclose
+    " tabpagewinnr('タブ番号')でタブ番号のwinnr()を実施
+    " 指定したタブ番号にコマンドを実行するってできないの？
+    execute 'tabprev'
+    execute 'close'
+    execute 'tabnext'
+endfunction "}}}
+nnoremap to :<C-u>call TabNewClose()<CR>
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" insert mode -----------------------------------------------------------------
+" Ignore <F1> to help
+inoremap <F1> <Nop>
+
+" complete key to <Ctrl+Space>
+inoremap <Nul> <C-n>
+
+" write
+inoremap <C-s> <Esc>:<C-u>write<CR>
+
+" カッコやクオートなどを入力した際に左に自動で移動します
+"inoremap {} {}<Left>
+"inoremap [] []<Left>
+"inoremap () ()<Left>
+"inoremap "" ""<Left>
+"inoremap '' ''<Left>
+"inoremap <> <><Left>
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" command mode ----------------------------------------------------------------
+cnoremap <C-c> <Nop>
+
+" search auto input '/' -> '\/', '?' -> '\?'
+cnoremap <expr> /  getcmdtype() == '/' ? '\/' : '/'
+cnoremap <expr> ?  getcmdtype() == '?' ? '\?' : '?'
+
+" search auto input '[' -> '\[', ']' -> '\]'
+function! Kakko(str) "{{{
+    let type = getcmdtype()
+    if type == '/' || type == '?'
+        return '\' . a:str
+    else
+        return a:str
+    endif
+endfunction "}}}
+cnoremap <expr> [ Kakko('[')
+cnoremap <expr> ] Kakko(']')
+
+" C-a で先頭、C-b でカーソル左、C-f でカーソル右、C-d で Delete
+cnoremap <C-b> <Left>
+cnoremap <C-f> <Right>
+cnoremap <C-d> <Delete>
+cnoremap <C-a> <C-b>
+
+" C-o で<cword>
+"cnoremap <C-w> <C-r><C-w>
+cnoremap <C-o> <C-r><C-w>
+" C-l でファイルパス
+cnoremap <C-l> <C-r>%
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" visual mode ----------------------------------------------------------------
+" Ignore 'u'(lower case) 'U'(upper case) for visual mode
+vmap u <Nop>
+vmap U <Nop>
+
+" delete end of current line's space
+function! DelEOL() "{{{
+    try
+        s/\s*$//g
+        call histdel('/',-1) " do not leave in history
+    catch /E486:/
+    endtry
+    nohlsearch
+endfunction "}}}
+vnoremap <silent> ed :call DelEOL()<CR>
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" private command -------------------------------------------------------------
+" ant
+command! Ant :!ant
+
+" :so %
+command! S :source % | edit!
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" vim scouter
+function! Scouter(file, ...) "{{{
+    let pat = '^\s*$\|^\s*"'
+    let lines = readfile(a:file)
+    if !a:0 || !a:1
+        let lines = split(substitute(join(lines, "\n"), '\n\s*\\', '', 'g'), "\n")
+    endif
+    return 'Your Vim Power: ' . len(filter(lines,'v:val !~ pat'))
+endfunction "}}}
+command! -bar -bang -nargs=? -complete=file Scouter
+\   echo Scouter(empty(<q-args>) ? $MYVIMRC : expand(<q-args>), <bang>0)
+"command! -bar -bang -nargs=? -complete=file GScouter
+"\   echo Scouter(empty(<q-args>) ? $MYGVIMRC : expand(<q-args>), <bang>0)
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" 新しいファイル名で保存する(rename:古いファイル名は削除される)
+function! DoRename(newname) "{{{
+    " 0: 偽 それ以外(1):真
+    if filereadable(a:newname)
+        echoerr "ファイルが存在します: " . a:newname
+        return
+    endif
+    execute 'file ' . a:newname
+    execute 'write ' . a:newname
+    call delete(expand('#'))
+endfunction "}}}
+command! -nargs=1 -complete=file Rename :call DoRename(<f-args>)
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Convert tcsh -> zsh
+function! DoConvZsh() "{{{
+  " 検索なしのエラーを出さない: catchしたらそれ以降やってくれない
+  try
+    %s/tcsh -f/zsh -f/g
+  catch /E486:/
+  endtry
+  try
+    %s/set //g
+  catch /E486:/
+  endtry
+  try
+    %s/ = /=/g
+  catch /E486:/
+  endtry
+  try
+    %s/\" == \"/\" = \"/g
+  catch /E486:/
+  endtry
+  try
+    %s/if (/if [[/g
+  catch /E486:/
+  endtry
+  try
+    %s/) then/]] then/g
+  catch /E486:/
+  endtry
+  try
+    %s/else if/elif/g
+  catch /E486:/
+  endtry
+  try
+    %s/endif/fi/g
+  catch /E486:/
+  endtry
+  try
+    %s/goto/#TODO goto/g
+  catch /E486:/
+  endtry
+  try
+    %s/^[A-Z].*:$/#TODO function XXX() {/g
+  catch /E486:/
+  endtry
+  try
+    %s/unalias \*//g
+    delete
+  catch /E486:/
+  endtry
+  set filetype=zsh
+endfunction "}}}
+command! ConvZsh :<C-u>call DoConvZsh()
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" change current directory
+" http://vim-users.jp/2009/09/hack69/ "{{{
+function! ChangeCurrentDir(directory, bang)
+    if a:directory == ''
+        lcd %:p:h
+    else
+        execute 'lcd' . a:directory
+    endif
+
+    if a:bang == ''
+        pwd
+    endif
+endfunction "}}}
+command! -nargs=? -complete=dir -bang CD call ChangeCurrentDir('<args>','<bang>')
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" clear messages
+command! MessageClear for n in range(200) | echom "" | endfor
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Show highlight group name under a cursor
+command! HlGroup echo synIDattr(synIDtrans(synID(line('.'), col('.'), 1)), 'name')
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" XMLlint
+command! XML :%s/></>\r</g | setf xml | normal gg=G
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" ZENKAKU -> '  ' (2spaces)
+function! Z2spaces() "{{{
+    try
+        %s/　/  /g
+        call histdel('/',-1) " do not leave in history
+    catch /E486:/
+    endtry
+endfunction "}}}
+command! Zenkaku :call Z2spaces()
+nnoremap <space>z :<C-u>call Z2spaces()<CR>
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" hex2dec, dec2hex
+if has('win32unix') || has('win64') "{{{
+    function! ExecH2D(arg)
+        let cmd = '$HOME/bin/cLang/cygwin/hex2dec ' . a:arg
+        echo vimproc#system(cmd)
+    endfunction
+    command! -nargs=1 HD call ExecH2D('<args>')
+
+    function! ExecD2H(arg)
+        let cmd = '$HOME/bin/cLang/cygwin/dec2hex ' . a:arg
+        echo vimproc#system(cmd)
+    endfunction
+    command! -nargs=1 DH call ExecD2H('<args>')
+endif "}}}
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Enable file type detection.
+" Use the default filetype settings, so that mail gets 'tw' set to 72,
+" 'cindent' is on in C files, etc.
+" Also load indent files, to automatically do language-dependent indenting.
+filetype plugin indent on
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" set window height 1/3 for help window
+function! HelpWindowAdjust() "{{{
+    if &filetype != "help"
+        return
+    endif
+    let height = 0
+    for n in range(1, winnr('$'))
+        let height += winheight(n)
+    endfor
+    execute "resize " . height / 3
+endfunction "}}}
+" Exit help window by <Esc><Esc>
+augroup HelpOpen
+    autocmd!
+    autocmd FileType help nnoremap <silent> <buffer> <Esc><Esc> :q<CR>
+    autocmd BufWinEnter *.txt,*.jax call HelpWindowAdjust()
+augroup END
+
+" When editing a file, always jump to the last known cursor position.
+" Don't do it when the position is invalid or when inside an event handler
+" (happens when dropping a file on gvim).
+autocmd BufReadPost *
+    \ if line("'\"") > 0 && line("'\"") <= line("$") |
+    \   execute "normal g`\"" |
+    \ endif
+
+" Remove all cprog autocommands
+augroup cprog "{{{
+    autocmd!
+    "autocmd BufRead * set formatoptions=cql nocindent comments&
+    autocmd BufRead * set nocindent comments&
+    "autocmd BufRead *.c,*.h,*.cc,*.cpp,*.mak,*.pc,*.mk,*.java set ts=4 sw=4 number cindent formatoptions=croql cindent comments=sr:/*,mb:*,el:*/,://
+    "autocmd BufNewFile,BufRead *.c,*.h,*.cc,*.cpp,*.mak,*.pc,*.mk,*.java,*.ini,*.bat set ts=4 sw=4 sts=0 cindent formatoptions=cql comments=sr:/*,mb:*,el:*/,://
+    autocmd BufNewFile,BufRead *.c,*.h,*.cc,*.cpp,*.mak,*.pc,*.mk,*.java,*.ini,*.bat set ts=4 sw=4 sts=0 cindent comments=sr:/*,mb:*,el:*/,://
+augroup END "}}}
+
+" for binary mode
+augroup BinaryXXD "{{{
+    autocmd!
+    autocmd BufReadPre *.bin let &binary =1
+    autocmd BufReadPost * if &binary | silent %!xxd -g 1
+    autocmd BufReadPost * set ft=xxd | endif
+    autocmd BufWritePre * if &binary | %!xxd -r | endif
+    autocmd BufWritePost * if &binary | silent %!xxd -g 1
+    autocmd BufWritePost * set nomod | endif
+augroup END "}}}
+
+" no auto comment with CR/LF
+augroup NoAutoComment
+    autocmd!
+    autocmd FileType * setlocal formatoptions-=ro formatoptions+=M
+augroup END
+
+" highlight for invisible space
+scriptencoding utf-8
+function! HiInvisbleSet() "{{{
+    if &filetype == 'calendar'
+        echomsg "WinEnter"
+        highlight clear WhitespaceEOL
+        return
+    endif
+    " 行末スペース
+    hi WhitespaceEOL ctermfg=none ctermbg=60 cterm=none guifg=NONE guibg=#363636 gui=NONE
+    match WhitespaceEOL /\s\+$/
+    " 全角スペース
+    hi Zenkaku ctermfg=none ctermbg=240 cterm=none guifg=NONE guibg=#505050 gui=NONE
+    2match Zenkaku /　/
+endfunction "}}}
+augroup highlightInvisble
+    autocmd!
+    autocmd Colorscheme * call HiInvisbleSet()
+    autocmd VimEnter,WinEnter * call HiInvisbleSet()
+    " http://hail2u.net/blog/software/vim-additional-highlights.html "{{{
+    " 行末スペース
+    "autocmd ColorScheme * highlight link TrailingSpaces Error
+    "autocmd Syntax * syntax match TrailingSpaces containedin=ALL /\s\+$/
+    " 全角スペース
+    "autocmd ColorScheme * highlight link ZenkakuSpace Error
+    "autocmd Syntax * syntax match ZenkakuSpace containedin=ALL /　/ "}}}
+augroup END
+
+" for auto read
+augroup vimrc-checktime
+    autocmd!
+    autocmd WinEnter * checktime
+augroup END
+
+" auto XML,HTML close tag.
+function! XmlSet() "{{{
+    inoremap <buffer> </ </<C-x><C-o>
+    let g:xml_syntax_folding = 1
+endfunction "}}}
+augroup MyXML
+    autocmd!
+    "autocmd Filetype xml inoremap <buffer> </ </<C-x><C-o>
+    autocmd Filetype xml call XmlSet()
+    autocmd Filetype html inoremap <buffer> </ </<C-x><C-o>
+augroup END
+
+" autocommand event order
+" https://merchan-dising.hatenablog.com/entry/2017/08/30/185311
+"   それぞれ、左から順に呼ばれたことを示す。
+"   "vim" でファイルを指定せず起動したとき
+"   BufEnter
+"   "vim hoge" で存在しないファイルを指定して起動したとき
+"   BufNewFile BufEnter
+"   "vim hoge" で存在するファイルを指定して起動したとき
+"   BufReadPre BufRead BufReadPost BufEnter
+"   標準入力から起動したとき
+"   StdinReadPre StdinReadPost BufEnter BufEnter
+"   "e hoge" で存在しないファイルを開いたとき
+"   BufNew BufAdd BufLeave BufHidden BufNewFile BufEnter
+"   "e hoge" で存在するファイルを開いたとき
+"   BufNew BufAdd BufLeave BufHidden BufReadPre BufRead BufReadPost BufEnter
+"   "bn" で別のバッファに移動したとき
+"   BufLeave BufHidden BufEnter
+"   "bd" でバッファを閉じて別のバッファに移動したとき
+"   BufLeave BufUnload BufDelete BufEnter
+"   "bd" で最後のバッファを閉じたとき
+"   BufNew BufAdd BufLeave BufUnload BufEnter BufDelete
+"   "w" でファイルに書き出ししたとき
+"   BufWrite BufWritePre BufWritePost
+"   ":w hoge" で存在しないファイルhogeに書き出ししたとき
+"   BufNew BufWrite BufWritePre BufWritePost
+"   ":w hoge" で存在するファイルhogeを上書きしたとき
+"   BufWrite BufWritePre BufWritePost
+
+" for *.bat sjis encoding
+function! BatSjis() "{{{
+    "echo "BatSjis"
+    set encoding=sjis
+    edit ++enc=sjis
+endfunction "}}}
+
+" for filetype: xxd, VB.Net, txt, ecmascript, svn
+"function! SetUtf16()
+"    edit ++enc=utf-16le
+"endfunction
+
+" fi git blanch is 'master' to set readonly
+function! CheckBranch() "{{{
+    let branch = fugitive#Head()
+    if branch == 'master'
+        call EchoErr('This is master branch, SET READONLY')
+        setlocal readonly
+        hi StatusLine ctermfg=15 ctermbg=198
+        hi StatusLineNC ctermfg=111 ctermbg=96
+    endif
+endfunction "}}}
+
+" autocommand for buffer read
+augroup MyFileType
+    autocmd!
+    autocmd BufRead *.blade.php setlocal filetype=php
+    autocmd BufRead *.php,*.js,*.css call CheckBranch()
+    autocmd BufReadPost,BufNewFile *.bin,*.exe,*.dll setlocal filetype=xxd
+    if "help" != &filetype
+        autocmd BufRead,BufNewFile *.txt setlocal filetype=text
+        autocmd BufRead,BufNewFile mail*.txt setlocal filetype=text ts=2 sw=2
+    endif
+    autocmd BufNewFile,BufRead *.log setlocal filetype=log
+    autocmd BufNewFile,BufRead *.conf setlocal filetype=apache
+    autocmd BufNewFile,BufRead AV_*.txt setlocal cursorline
+    autocmd BufNewFile,BufRead logs/*.php setlocal filetype=log
+    "autocmd FileType utf16txt setlocal fileencoding=utf-16le
+    "autocmd FileType utf16txt call SetUtf16()
+
+    " for *.bat sjis encoding
+    "autocmd BufReadPre *.bat call BatSjis()
+    autocmd BufRead *.bat call BatSjis()
+    "autocmd BufReadPost *.bat call BatSjis()
+    "autocmd BufEnter *.bat call BatSjis()
+augroup END
+
+" autocommand for buffer write
+augroup MyBufRW
+    autocmd!
+    autocmd BufWinEnter 256colortest.vim source %
+    "autocmd BufWritePost syri.vim source %
+    "autocmd BufWritePost romeo.vim source %
+    autocmd BufWritePost functions.vim source %
+augroup END
+
+" autocommand for file type
+augroup FileTypeSet
+    autocmd!
+    autocmd FileType svn setlocal paste
+    autocmd FileType jsp setlocal commentstring=<!--%s-->
+    autocmd FileType php setlocal cursorline commentstring=\ //%s
+    autocmd FileType java setlocal cursorline
+    autocmd FileType javascript setlocal cursorline
+    autocmd FileType log setlocal cursorline
+    autocmd FileType sql setlocal cursorline
+    autocmd FileType sh setlocal cursorline
+    autocmd FileType css setlocal cursorline
+    autocmd FileType vim setlocal cursorline
+    autocmd FileType messages setlocal cursorline
+    autocmd FileType apache setlocal cursorline
+    autocmd FileType zsh setlocal cursorline
+    autocmd FileType dosbatch setlocal cursorline
+    autocmd FileType text setlocal cursorline
+    autocmd FileType python setlocal cursorline
+    autocmd FileType hlsplaylist setlocal cursorline
+    autocmd FileType gitcommit setlocal textwidth=0
+augroup END
+
+" auto hilight for compl-omni-filetypes "{{{
+"augroup CompHilight
+"    autocmd!
+"    autocmd BufRead,BufNewFile * hi Pmenu    ctermbg=61
+"    autocmd BufRead,BufNewFile * hi PmenuSel cterm=bold ctermbg=90
+"    autocmd BufRead,BufNewFile * hi PmenuSbar ctermbg=248 guibg=Grey "スクロールバー
+"    autocmd BufRead,BufNewFile * PmenuThumb cterm=reverse gui=reverse "スクロールバーの現在位置
+"augroup END "}}}
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" auto read .vimrc
+augroup AutoReadVimrc
+    autocmd!
+    autocmd BufWritePost $MYVIMRC nested source $MYVIMRC | syntax on
+augroup END
+"if !has('gui_running') && !(has('win32unix') || has('win64')) "{{{
+"    " .vimrcの再読込時にも色が変化するようにする
+"    autocmd MyAutoCmd BufWritePost $MYVIMRC nested source $MYVIMRC
+"else
+"    " .vimrcの再読込時にも色が変化するようにする
+"    autocmd MyAutoCmd BufWritePost $MYVIMRC source $MYVIMRC |
+"            \if has('gui_running') | source $MYGVIMRC
+"    autocmd MyAutoCmd BufWritePost $MYGVIMRC if has('gui_running') | source $MYGVIMRC
+"endif "}}}
+
+" 日本語を含まない場合は fileencoding に encoding を使うようにする
+function! AU_ReCheck_FENC() "{{{
+    if &fileencoding =~# 'iso-2022-jp' && search("[^\x01-\x7e]", 'n') == 0
+        let &fileencoding=&encoding
+    endif
+endfunction "}}}
+autocmd BufReadPost * call AU_ReCheck_FENC()
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" for default plugin
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" netrw
+let g:netrw_sort_by = 'time'
+
+" ctags
+" tag back
+" nnoremap <C-q> <C-t>
+
+" preview current cursor word <C-w>}
+"nnoremap <C-w>p <C-w>}
+nnoremap <Space>s <C-w>}
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" for ~/.vim/plugin
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" hz_ja.vim "{{{
+"if g:hname == 'wir-190' || g:hname == 'wir-023' || g:hname == "ROMEO"
+"    " disable hz_ja.vim
+"    let plugin_hz_ja_disable = 1
+"endif "}}}
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" for ~/.vim/bundle plugin
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" vundle.vim
+" git clone http://github.com/gmarik/vundle.git ~/.vim/vundle.git
+" 'vundle'自体をvundleで管理
+"   git clone http://github.com/gmarik/vundle.git ~/.vim/bundle/vundle
+" git command:
+" if 'error: Connection timed out' -> 'https' -> 'http'
+
+" gvim:
+" vundle自体が ~/.vim/前提になっているので ~/vimfiles/bundle/vundle がうまく設定できない
+" mklink .vim vimfiles でごまかす
+" -> call vundle#rc('vimfiles/bundle') のように引数渡せばいいみたいだけどまぁいい…
+
+let $VUNDLE_DIR = expand(g:vimdir.'/bundle/vundle')
+"if isdirectory(expand('~/.vim/bundle/vundle'))
+if isdirectory($VUNDLE_DIR)
+    let g:vundle_default_git_proto = 'http'
+    filetype off
+    "set runtimepath+=~/.vim/bundle/vundle
+    set runtimepath+=$VUNDLE_DIR
+    call vundle#rc()
+
+    " github
+    Bundle 'gmarik/vundle'
+    Bundle 'Shougo/unite.vim'
+    Bundle 'Shougo/neocomplcache.vim'
+    Bundle 'Shougo/neomru.vim'
+    "Bundle 'Shougo/unite-help'
+    "Bundle 'Shougo/vimfiler'
+    "Bundle 'Shougo/vimshell'
+    Bundle 'Shougo/vimproc'
+    Bundle 'kana/vim-operator-user'
+    if ! has('clipboard')
+        Bundle 'kana/vim-fakeclip'
+    endif
+    Bundle 'kana/vim-tabpagecd'
+    Bundle 'rbtnn/vim-operator-quickhl.vim'
+    Bundle 't9md/vim-textmanip'
+    Bundle 't9md/vim-quickhl'
+    Bundle 'taku-o/vim-toggle'
+    Bundle 'taku-o/vim-catn'
+    Bundle 'fuenor/qfixgrep'
+    Bundle 'thinca/vim-tabrecent'
+    "Bundle 'mattn/calendar-vim'
+    "Bundle 'itchyny/calendar.vim'
+    "Bundle 'ConradIrwin/vim-bracketed-paste'
+    "if !has('gui_running')
+    "    Bundle 'itchyny/lightline.vim'
+    "endif
+    "Bundle 'mattn/modelinefenc-vim'
+    "Bundle 'Yggdroot/indentLine'
+    Bundle 'vim-indent-guides'
+    if g:hname == 'STYLEFREE364-PC' || g:hname == 'STYLEFREE436-PC'
+        Bundle 'pechorin/any-jump.vim'
+        Bundle 'rking/ag.vim'
+        Bundle 'vim-fugitive'
+        "Bundle 'vim-syntastic/syntastic'
+        "if has('job') && has('channel') && has('timers')
+        "    Bundle 'w0rp/ale'
+        "else
+            Bundle 'vim-syntastic/syntastic'
+        "endif
+        "if has('python')
+        "    Bundle 'gregsexton/VimCalc'
+        "    Bundle 'Shougo/vinarise'
+        "endif
+    endif
+    Bundle 'vim-jp/vimdoc-ja'
+
+    " github/vim-scripts
+    "Bundle 'vim-scripts/The-NERD-Commenter'
+    Bundle 'vim-scripts/Smooth-Scroll'
+    "if g:hname == 'STYLEFREE364-PC'
+    "    Bundle 'vim-scripts/taglist.vim'
+    "endif
+    "Bundle 'vim-scripts/matchit.zip'
+    Bundle 'vim-scripts/qnamebuf'
+    "Bundle 'MultipleSearch'
+    filetype plugin indent on
+endif
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" fugitive.vim
+" ignore 'GBrowse' command
+command! GB :Git blame
+command! GL :Git log --name-status
+command! GS :Git status
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" matchit.vim
+"let b:match_words = "if:else:endif,if:fi,case:esac,<:>,[:],function:endfunction"
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" qnamebuf.vim
+let g:qnamebuf_hotkey = "<F5>"
+" hi QNamePickerAlt ctermbg=17
+" qnamebuf/plugin/qnamepicker.vim
+" function! s:colPrinter.print() dict の 選択部分のhighlightが Search なので変えたい
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" fakeclip.vim "{{{
+" "*pが使えない様なので
+" putclip, getclip : cygutils-extra
+" '+clipboard'があればfakeclip.vim使ってない
+if has('win32unix') || has('win64')
+    function! YankClip()
+        "if ! has('clipboard')
+            "call EchoErr("No clipboard")
+            "return
+        "endif
+        "execute "normal V"
+        execute 'normal ^v$h'
+        execute 'normal "*y'
+    endfunction
+
+    function! PasteClip()
+        "if ! has('clipboard')
+            "call EchoErr("No clipboard")
+            "return
+        "endif
+        " register "* から改行(^J)を取り除く
+        "let clip = @*
+        "echo "clip: " . clip
+        "let sub = substitute(clip,"\n","","g")
+        "echo "sub: " . sub
+        " 1行だけならいいけど複数行の時だめ
+
+        "let @* = substitute(@*,"\n","","")
+        " TODO !has('clipboard') のとき、@*に入らない
+        " ↓<Esc>含むとき、"で括らないとだめ
+        "if @* == ""
+        "    call EchoErr("No Clipboad")
+        "    return
+        "endif
+        execute "normal o\<Esc>"
+        execute 'normal "*p0'
+    endfunction
+
+    "vnoremap ,y :!putclip<CR>u
+    "nnoremap ,p :read! getclip<CR>
+    nnoremap Y :<C-u>call YankClip()<CR>
+    nnoremap ,p :<C-u>call PasteClip()<CR>
+endif
+"}}}
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Textmanip.vim "{{{
+" copy text on normal mode
+"nmap <M-d> <Plug>(Textmanip.duplicate_selection_n)
+" move text on visual mode
+vmap <C-j> <Plug>(textmanip-move-down)
+vmap <C-k> <Plug>(textmanip-move-up)
+vmap <C-h> <Plug>(textmanip-move-left)
+vmap <C-l> <Plug>(textmanip-move-right)
+" copy text on visual mode
+vmap <C-d> <Plug>(textmanip-duplicate-down)
+"}}}
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" ShowFunc.vim "{{{
+" default <F1> -> <F7>
+" ShowFunc Window commands:
+" c       Close cwindow.
+" h       Display help dialog.
+" r        Refresh.
+"map  <F7> <Plug>ShowFunc
+"map! <F7> <Plug>ShowFunc "}}}
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" neocompletecache.vim "{{{
+let g:acp_enableAtStartup = 0 " Disable AutoComplPop.
+let g:neocomplcache_force_overwrite_completefunc = 1
+let g:neocomplcache_auto_completion_start_length = 3 " default=2
+" startup flag
+if g:hname == 'KANAB0000054-PC'
+	let g:neocomplcache_enable_at_startup = 1
+else
+	let g:neocomplcache_enable_at_startup = 0
+endif
+
+augroup NeocomFT
+    autocmd!
+	autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
+	autocmd FileType html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
+    autocmd FileType javascript setlocal omnifunc=javascriptcomplete#CompleteJS
+augroup END
+
+" 補完候補の選択を<Tab>で
+function! InsertTabWrapper() "{{{
+    if pumvisible()
+        return "\<c-n>"
+    endif
+    let col = col('.') - 1
+    " getline('.')[col - 1] = カーソルの1つ前の文字
+    " '\k\|<\|/' ってよくわからん
+    if !col || getline('.')[col - 1] !~ '\k\|<\|/'
+        return "\<tab>"
+    elseif exists('&omnifunc') && &omnifunc == ''
+        return "\<c-n>"
+    else
+        "return "\<c-x>\<c-o>"
+
+        "try
+        "    return "\<c-x>\<c-o>"
+        "catch /.*/
+        "endtry
+        "return "\<c-n>"
+
+        " [オムニ補完が見つからない]ってうるさいので
+        return "\<tab>"
+    endif
+endfunction "}}}
+inoremap <tab> <C-r>=InsertTabWrapper()<CR>
+"}}}
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" unite.vim "{{{
+" バッファ一覧
+nnoremap <Space>u :<C-u>Unite buffer<CR>
+" ファイル一覧
+nnoremap <Space>f :<C-u>Unite file<CR>
+" 最近使用したファイル一覧
+nnoremap <Space>m :<C-u>Unite file_mru<CR>
+" ブックマーク一覧
+nnoremap <Space>b :<C-u>Unite bookmark<CR>
+" 最近使用したカレントディレクトリ一覧
+"nnoremap <Space>d :<C-u>Unite directory_mru<CR>
+" grep
+nnoremap <Space>g :<C-u>Unite grep<CR>
+" 現在のバッファがあるディレクトリのファイル一覧
+nnoremap <Space>d :<C-u>UniteWithBufferDir -buffer-name=files file<CR>
+" yank history
+nnoremap <Space>y :<C-u>Unite history/yank<CR>
+
+" <C-j>, <C-k>で next, prev line
+autocmd FileType unite imap <silent><buffer> <C-j> <Plug>(unite_select_next_line)
+autocmd FileType unite imap <silent><buffer> <C-k> <Plug>(unite_select_previous_line)
+
+" *unite* a で水平分割して上側にファイルを開く
+autocmd FileType unite nnoremap <silent><buffer><expr> a unite#smart_map('a', unite#do_action('above'))
+autocmd FileType unite inoremap <silent><buffer><expr> a unite#smart_map('a', unite#do_action('above'))
+
+" ESCキーを2回押すと終了する
+autocmd FileType unite nmap <silent><buffer> <Esc><Esc> <Plug>(unite_exit)
+autocmd FileType unite imap <silent><buffer> <Esc><Esc> <Plug>(unite_exit)
+
+" Uniteウィンドウ高さ
+let g:unite_winheight = winheight(0)/3
+" 絞込みテキストの入力モード
+let g:unite_enable_start_insert = 0
+" file_mruファイル表示フォーマットを空にして表示を高速化
+let g:unite_source_file_mru_filename_format = ''
+" show in default file_mru window.
+let g:unite_source_file_mru_limit = 200
+" Search through yank history
+let g:unite_source_history_yank_enable = 1
+" '.svn'directoryを対象外に(default:-Hn)
+"let g:unite_source_grep_default_opts='-Hn --exclude-dir=.svn --exclude=tags --include=*.c --include=*.cpp --include=*.cxx --include=*.h --include=*.vim'
+let g:unite_source_grep_default_opts='-Hn --exclude-dir=.svn --exclude=tags --exclude="*.dat" --exclude="*.ncb" --exclude="*.org" --exclude="*.bk" --exclude="*.me" --exclude="*.old" --exclude="*.vcproj" --exclude=".*.swp" --exclude="*.*_"'
+
+" unite-help
+" Execute help by cursor keyword.
+"nnoremap <silent> g<C-h>  :<C-u>UniteWithCursorWord help<CR>
+"}}}
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" vimshell.vim "{{{
+"let g:vimshell_split_height = 20    " ウィンドウ高さの%
+"nnoremap <Space>vp :VimShellPop<CR>
+" ESCキーを2回押すと隠す
+"autocmd FileType vimshell inoremap <silent> <buffer> <Esc><Esc> <Esc><Plug>(vimshell_hide)
+" TODO vimshrc
+"g:vimshell_vimshrc_path					*g:vimshell_vimshrc_path*
+"			vimshellが最初に読み込むシェルの設定ファイル.vimshrc "}}}
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" VimCalc.vim "{{{
+" quit buffer by 'qq' insert mode
+"augroup VimCalcQuit
+"    autocmd!
+"    autocmd FileType vimcalc inoremap <silent> <buffer> qq <Esc>:close<CR>
+"augroup END
+"command! Cal Calc
+"}}}
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" syntastic "{{{
+let g:syntastic_java_javac_options = '-encoding UTF-8'
+"}}}
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" ale "{{{
+let g:ale_lint_on_enter = 0
+let g:ale_fix_on_save = 1
+let g:ale_sign_error = ">>"
+let g:ale_sign_warning = ">>"
+let g:ale_linters = {
+    \ 'javascript': ['eslint'],
+    \ 'php': ['phpcs', 'phpcbf']
+    \ }
+highlight ALEErrorSign ctermfg=196 guifg=#C30500
+highlight ALEWarningSign ctermfg=212 guifg=#ED6237
+
+" https://blog.uedder.com/develope-java-with-vim.html
+let s:lombok_path = $HOME . '/.vim/eclipse.jdt.ls/lombok/lombok.jar'
+if executable('java') && filereadable(expand('~/.vim/eclipse.jdt.ls/plugins/org.eclipse.equinox.launcher_1.6.400.v20210924-0641.jar')) && filereadable(expand(s:lombok_path))
+
+    " ale の設定
+    let g:ale_java_javac_options = "-cp " . s:lombok_path
+
+    " vim-lsp の設定
+    au User lsp_setup call lsp#register_server({
+        \ 'name': 'eclipse.jdt.ls',
+        \ 'cmd': {server_info->[
+        \     'java',
+        \     '-javaagent:' . s:lombok_path,
+        \     '-Xbootclasspath/a:' . s:lombok_path,
+        \     '-Declipse.application=org.eclipse.jdt.ls.core.id1',
+        \     '-Dosgi.bundles.defaultStartLevel=4',
+        \     '-Declipse.product=org.eclipse.jdt.ls.core.product',
+        \     '-Dlog.level=ALL',
+        \     '-noverify',
+        \     '-Dfile.encoding=UTF-8',
+        \     '-Xmx1G',
+        \     '-jar',
+        \     expand('~/.vim/eclipse.jdt.ls/plugins/org.eclipse.equinox.launcher_1.6.400.v20210924-0641.jar'),
+        \     '-configuration',
+        \     expand('~/.vim/eclipse.jdt.ls/config_mac'),
+        \     '-data',
+        \     getcwd()
+        \ ]},
+        \ 'whitelist': ['java'],
+        \ })
+endif
+
+""" 以下のキーマッピングは任意
+" 定義へ飛ぶ
+nmap <silent> <C-]> :LspDefinition<CR>
+" 定義へ飛ぶ
+nmap <silent> gd :LspDefinition<CR>
+" 呼び出し箇所を見る
+nmap <silent> gD :LspReferences<CR>
+
+"}}}
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" qfixgrep.vim
+" http://sites.google.com/site/fudist/Home/grep/usage
+"let mygrepprg = 'grep'
+" :Grep
+" set preveiw window's height
+let g:QFix_PreviewHeight = &previewheight
+let MyGrep_ExcludeReg = '*dummy*\|.svn.*$\|tags\|.svn-base$\|.vcproj$\|.*_$\|.bk$\|.org$\|.old$\|.me$\|.r[0-9][0-9][0-9]$\|.mine$\|logs.*\.php$'
+function! QFixRgrep() "{{{
+    if &fileencoding == "sjis"
+        execute "RGrep " . expand('<cword>') . " *"
+    else
+        execute "RGrep \\<" . expand('<cword>') . "\\> *"
+    endif
+endfunction "}}}
+"nnoremap <Space>r :execute "RGrep \\<" . expand('<cword>') . "\\> *"<CR>
+nnoremap <Space>r :<C-u>call QFixRgrep()<CR>
+" QuickFixウィンドウの <S-CR> は分割ではなくタブで開くには'tab'に設定する
+"let QFix_Edit = 'tab' コレジャナイ
+
+function! QFixBufWipeout() "{{{
+    if &buftype == 'quickfix'
+        "echomsg ">>> QFixBufWipeout()"
+        let g:QFix_PreviewHeight = &previewheight
+    endif
+endfunction "}}}
+augroup QFixAu
+    autocmd!
+    autocmd BufWipeout * call QFixBufWipeout()
+augroup END
+
+" qfixgrepの結果から選択ファイルを新しいタブで開く
+function! QFixOpenNew(where) "{{{
+    if &filetype != 'qf'
+    	call EchoErr('Not qfixgrep window')
+    	return
+    endif
+
+    " 現在行を取得
+    let liney = getline('.')
+    "echo "liney: " . liney
+    " '|'で分割
+    let src = split(liney,'|')[0]
+    "echo "src: " . src
+    if filereadable(src)
+        if a:where == 'tab'
+            execute 'tabnew ' . src
+        else
+            execute 'new ' . src
+        endif
+    else
+        call EchoErr('No file: ' . src)
+    endif
+endfunction "}}}
+nnoremap qt :<C-u>call QFixOpenNew('tab')<CR>
+nnoremap qu :<C-u>call QFixOpenNew('upper')<CR>
+
+" qfixウィンドウで簡易ヘルプファイル(自前)を開く
+function! QFixOpenHelp() "{{{
+    if &filetype != 'qf'
+    	call EchoErr('Not qfixgrep window')
+    	return
+    endif
+
+    let helpfile = '$HOME/.vim/qfixgrep_help.txt'
+    if filereadable(expand(helpfile))
+    	execute 'vnew ' . helpfile
+    else
+    	call EchoErr('No file: ' . expand(helpfile))
+    endif
+endfunction "}}}
+nnoremap qh :<C-u>call QFixOpenHelp()<CR>
+
+" qfixウィンドウでプレビューウィンドウの高さを+/-10
+function! QFixPrevHeight(id) "{{{
+    if &filetype != 'qf'
+    	call EchoErr('Not qfixgrep window')
+    	return
+    endif
+
+    let qheight = g:QFix_PreviewHeight
+    if a:id == "increase"
+    	let qheight += 10
+    elseif a:id == "decrease"
+    	let qheight -= 10
+    else
+    	return
+    endif
+
+    let g:QFix_PreviewHeight = qheight
+    call QFixPclose()
+endfunction "}}}
+nnoremap <silent> q<F9> :<C-u>call QFixPrevHeight("increase")<CR>
+nnoremap <silent> q<F10> :<C-u>call QFixPrevHeight("decrease")<CR>
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" NERD_commenter.vim "{{{
+" デフォルトキーマップを無効
+let g:NERDCreateDefaultMappings = 0
+nmap <Leader>c <Plug>NERDCommenterToggle
+vmap <Leader>c <Plug>NERDCommenterToggle
+"}}}
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" toggle.vim "{{{
+let g:toggle_pairs = { 'Odd':'Even', 'Even':'Odd', 'odd':'even', 'even':'odd' }
+imap <C-c> <Plug>ToggleI
+nmap <C-c> <Plug>ToggleN
+vmap <C-c> <Plug>ToggleV
+"}}}
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" quickhl.vim
+" g:quickhl_manual_colors "{{{
+let g:quickhl_manual_colors = [
+    \ "ctermfg=15 ctermbg=33   guifg=#002288 guibg=#00bfff",
+    \ "ctermfg=15 ctermbg=1    guifg=#ffffff guibg=#00008b",
+    \ "ctermfg=16 ctermbg=2    guifg=#ffffff guibg=#006400",
+    \ "ctermfg=16 ctermbg=3    guifg=#aaffff guibg=#008b8b",
+    \ "ctermfg=15 ctermbg=24   guifg=#000000 guibg=#9acd32",
+    \ "ctermfg=15 ctermbg=5    guifg=#ffffff guibg=#8b008b",
+    \ "ctermfg=16 ctermbg=6    guifg=#ffffff guibg=#a52a2a",
+    \ "ctermfg=15 ctermbg=21   guifg=#ffffff guibg=#1232a0",
+    \ "ctermfg=15 ctermbg=22   guifg=#ffffff guibg=#556b2f",
+    \ "ctermfg=15 ctermbg=133  guifg=#000000 guibg=#40e0d0",
+    \ "ctermfg=15 ctermbg=208  guifg=#222200 guibg=#ffa500",
+    \ "ctermfg=16 ctermbg=79   guifg=#000000 guibg=#7fffd4",
+    \ "ctermfg=15 ctermbg=56   guifg=#000000 guibg=#6495ed",
+    \ "ctermfg=15 ctermbg=53   guifg=#ffffff guibg=#65318e",
+    \ "ctermfg=16 ctermbg=227  guifg=#000000 guibg=#daa520",
+    \ "ctermfg=15 ctermbg=64   guifg=#ffffff guibg=#6b8e23"
+    \ ]
+"}}}
+function! QHSearch(s,jump,cmd) "{{{
+    if g:hname == 'lenovo-E130-001'
+        set noignorecase
+    endif
+    " a:s '/a:s'となる
+    "echo "s : " . a:s . " ,j : " . a:jump . " ,cmd: " . a:cmd
+    " search forword
+    if a:jump == "sf"
+        let direction = '/'
+        let word = '\<' . a:s . '\>'
+    " search back
+    elseif a:jump == "sb"
+        let direction = '?'
+        let word = '\<' . a:s . '\>'
+    else
+        let direction = a:s[0]
+        let word = a:s[1:]
+    endif
+    "echo "wo: " . word
+    "echo "di: " . direction
+    if word != ""
+        if a:cmd == "q"
+            "execute "QuickhlAdd! " . word
+            execute "QuickhlManualAdd! " . word
+        elseif a:cmd == "n"
+            execute "normal /" . word
+        endif
+        "register @/に入れないとだめっぽい
+        let @/ = word
+        call histadd('/',word)
+    endif
+
+    let di = direction == '/' ? "n" : "N"
+    try
+        execute "normal " . di
+    catch /E486:/
+        call EchoErr("No match found: " . word)
+        execute "QuickhlManualDelete " . word
+        call histdel('/',-1)
+    endtry
+    if g:hname == 'lenovo-E130-001'
+        set ignorecase
+    endif
+endfunction "}}}
+command! -nargs=* -bang Q :call QHSearch(<q-args>,<bang>1,"q")
+command! -nargs=0 QHF :call QHSearch(expand('<cword>'),"sf","q")
+command! -nargs=0 QHB :call QHSearch(expand('<cword>'),"sb","q")
+nnoremap / :<C-u>Q/
+nnoremap ? :<C-u>Q?
+nnoremap * :QHF<CR>
+nnoremap # :QHB<CR>
+
+"function! QHReset()
+    "QuickhlReset
+    "nohlsearch
+    "コマンド実行後"normal n"するとhist highlightは復活する -> しょうがない
+    ":h autocmd 自動コマンドの中で ":nohlsearch" を使って、検索語の強調表示を無効にすることはできない
+    ":h :nohlsearch オートコマンドを実行する時に強調表示の状態を保存し、
+    "               実行後に元に戻すからです。ユーザー関数を呼び出したときも同様。
+"endfunction
+nnoremap <silent> mr :QuickhlManualReset<CR>
+    \ :nohlsearch<CR>
+
+function! QHAdd() "{{{
+    execute "normal gvy"
+    let word = @0
+    "echo "word: " . word
+    execute "QuickhlManualAdd " . word
+    let @/ = word
+    call histadd('/',word)
+endfunction "}}}
+vmap <silent> mm :call QHAdd()<CR>
+nmap ma :QuickhlManualAdd!<Space>
+function! QHDel() "{{{
+    QuickhlManualDelete
+    set nohlsearch
+endfunction "}}}
+nnoremap <silent> md :call QHDel()<CR>
+nnoremap <silent> mc :<C-u>QuickhlManualColors<CR>
+nnoremap <silent> ml :<C-u>QuickhlManualList<CR>
+" normalのsearchを実行
+" <Space>? は OpenHelp()で使っているので設定しない
+command! -nargs=* -bang NS :call QHSearch(<q-args>,<bang>1,"n")
+noremap <Space>/ :<C-u>NS/
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" taglist.vim
+let Tlist_Ctags_Cmd = '/bin/ctags'
+" cursor is moved to the taglist window or remains in the current window.
+let Tlist_GainFocus_On_ToggleOpen = 1
+" To automatically close the taglist window when a tag or file is selected
+let Tlist_Close_On_Select = 1
+" display the tags defined only in the current buffer
+let Tlist_Show_One_File = 1
+" set taglist window width
+let Tlist_WinWidth = 36
+" Sort method used for 'name'
+let Tlist_Sort_Type = 'name'
+augroup TagListFileType
+    autocmd!
+    autocmd Filetype taglist setlocal cursorline
+    " できねー
+    "if &filetype == 'taglist'
+    "    autocmd BufLeave __Tag_List__ echo 'taglist buf leaved'
+    "    autocmd WinLeave __Tag_List__ echo 'taglist win leaved'
+    "endif
+augroup END
+
+let g:PrevWinnr = 1
+function! OpenTList() "{{{
+    if &filetype == 'c' || &filetype == 'cpp' || &filetype == 'vim' || &filetype == 'java' || &filetype == 'javascript' || &filetype == 'jsp' || &filetype == 'php'
+        let g:PrevWinnr = winnr()
+    	" taglist
+        execute ":TlistToggle"
+        " <C-w>w : -> let Tlist_GainFocus_On_ToggleOpen = 1
+    elseif &filetype == 'taglist'
+    	" taglist
+        execute ":TlistToggle"
+        "execute ":TlistClose"
+        " <F1> でTaglistがcloseされた時はこれでいいけど、自動でcloseされた時はだめ
+        " -> BufLeave ?
+        execute g:PrevWinnr . "wincmd w"
+    " :help window
+	"	The count can also be a window number.  Example: >
+	"		:exe nr . "wincmd w"
+	"	This goes to window "nr".
+    else
+    	call EchoErr('current file is not C-lang/vim file')
+    endif
+endfunction "}}}
+" nnoremap <F1> :<C-u>call OpenTList()<CR>
+" open in new tab
+" nnoremap <F4> :<C-u>tab stj <C-R>=expand('<cword>')<CR><CR>
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" calendar.vim {{{
+" http://d.hatena.ne.jp/itchyny/20140108/1389164688
+"let g:calendar_locale = 'en_US'
+"if g:hname != 'KANAB0000054-PC'
+"    let g:calendar_google_calendar = 1
+"    let g:calendar_google_task = 1
+"    "let g:calendar_google_event_download = 1
+"endif
+"
+"function! CalendarBufClear()
+"    if &filetype == 'calendar'
+"    "    echomsg "BufEnter"
+"    "    highlight clear WhitespaceEOL
+"    endif
+"    "nmap <buffer> n <Plug>CalendarGotoNextMonth
+"    "nmap <buffer> p <Plug>CalendarGotoPrevMonth
+"endfunction
+"function! CalendarBufRead()
+"    if &filetype == 'calendar'
+"    "    echomsg "BufRead"
+"    "    highlight clear WhitespaceEOL
+"    endif
+"endfunction
+"function! CalendarBufNew()
+"    if &filetype == 'calendar'
+"    "    echomsg "BufNew"
+"    "    highlight clear WhitespaceEOL
+"    endif
+"endfunction
+"augroup CalendarBuf
+"    autocmd!
+"    "autocmd FileType calendar :call CalendarBufClear()
+"    autocmd BufEnter * :call CalendarBufClear()
+"     "autocmd BufRead * :call CalendarBufRead() こない
+"     "autocmd BufNew * :call CalendarBufNew() こない
+"augroup END
+"
+"command! CY Calendar -view=year
+"command! CM Calendar -view=month
+"command! CC Calendar -view=year -split=horizontal -position=below -height=12
+"command! CH Calendar -view=year -split=vertical -width=27
+"}}}
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" lightline.vim {{{
+" https://github.com/itchyny/lightline.vim
+" http://leafcage.hateblo.jp/entry/2013/10/21/lightlinevim-customize
+"
+" colorscheme.my: ~/.vim/bundle/lightline.vim/autoload/lightline/colorscheme/my.vim
+let g:lightline = {
+    \ 'colorscheme': 'my',
+    \ 'active': {
+    \   'left': [ ['mode', 'paste'], ['filename', 'flags'] ],
+    \   'right': [ ['line'], ['info'] ]
+    \ },
+    \ 'inactive': {
+    \   'left': [ ['mode'], ['filenamein', 'flags'] ],
+    \   'right': [ ['line'] ]
+    \ },
+    \ 'component_function': {
+    \   'mode': 'LightLineMode',
+    \   'filename': 'LightLineFileName',
+    \   'filenamein': 'LightLineFileNameIn',
+    \   'flags': 'LightLineFlags',
+    \   'line': 'LightLineLine',
+    \   'info': 'LightLineInfo',
+    \ },
+    \ 'component': {
+    \   'relativepath': '%.72(%f %)',
+    \   'relativepathinactive': '%t',
+    \   'close': ''
+    \ },
+    \ 'separator': { 'left': '', 'right': '' },
+    \ 'subseparator': { 'left': '', 'right': '' },
+    \ }
+
+" これでtabのファイル名取得する関数を指定できる
+let g:lightline.tab = { 'active': [ 'prefix', 'filename' ] }
+let g:lightline.tab.inactive = g:lightline.tab.active
+let g:lightline.tab_component_function = {
+    \ 'prefix' : 'LightLineTabPre',
+    \ 'filename' : 'LightLineTab' }
+
+" component_expandのほうが、component_functionより先に展開されるので、
+" component_expandで書かないとだめ
+"let g:lightline.component_expand = { 'tabs': 'lightline#tabs' } <<<--- 'tabs'はcomponent_expandで出力する
+"let g:lightline.component_type = { 'tabs': 'tabsel' }
+"let g:lightline.tabline = {
+"    \ 'left': [ [ 'tabs' ] ] } <<<--- tabline.leftは'tabs'コンポーネント
+    "\ 'tab': { 'active': [ 'filenametab' ] },
+"let g:lightline.tab.inactive = g:lightline.tab.active
+
+" shortening strings that defined at lightline plugin.
+let g:LightLineModeMap = {
+    \ 'NORMAL' : 'NO', 'INSERT' : 'IN', 'REPLACE' : 'RE', 'VISUAL' : 'VI',
+    \ 'V-LINE' : 'VL', 'COMMAND' : 'CO', 'V-BLOCK' : 'VB', 'SELECT' : 'SE',
+    \ 'S-LINE' : 'SL', 'S-BLOCK' : 'SB', '      ' : '??' }
+"}}}
+
+function! LightLineMode() "{{{
+    let bufn = bufnr('%') . ": "
+    " get string that defined lightline plugin
+    let mstr = lightline#mode()
+    if 90 < winwidth('.')
+        let modestr = bufn . g:LightLineModeMap[mstr]
+    else
+        let modestr = g:LightLineModeMap[mstr]
+    endif
+    return modestr
+endfunction "}}}
+function! LightLineFileName() "{{{
+    "let flags = LightLineFlags()
+    "return '%.72(%{expand('%')}%)'
+    " winwidth('.')で画面カラムを取得
+    " LightLineMode()+2,LightLineInfo()+2,LightLineLine()+2の幅をstrlen()で取得
+    " winwidth()からその他のカラムを引いたのがfilenameとして表示できる幅
+    " その分まで切り詰める
+    let path = expand('%')
+    let path = substitute(path,$HOME,"~","")
+    " strlen() does not work in multi_byte
+    "let pathlen = strlen(path)
+    let pathlen = strwidth(path)
+    if pathlen == 0
+        let path = "[No Name]"
+        if &buftype == 'quickfix'
+            let path = &buftype
+        endif
+        let pathlen = strlen(path)
+    endif
+
+    let winlen = winwidth('.')
+    let infolen = strlen(LightLineMode() . LightLineInfo() . LightLineLine()) + (2+2+2)
+    let flglen = strlen(LightLineFlags())
+    if 0 < flglen
+        let flglen += 2
+    endif
+    let maxlen = winlen - infolen - flglen
+    "echomsg "pathlen: " . pathlen . ", winlen: " . winlen . ", infolen: " . infolen . ", flglen: " . flglen . ", maxlen: " . maxlen
+
+    if (maxlen-2) < pathlen
+        let path = '...' . path[(pathlen+5)-maxlen : -1]
+    endif
+
+    return path
+endfunction "}}}
+function! LightLineFileNameIn() "{{{
+    let path = expand('%:t')
+    if strlen(path) == 0
+        let path = "[No Name]"
+    endif
+    return path
+endfunction "}}}
+function! LightLineFlags() "{{{
+    let roflg = &readonly ? "[RO]" : ""
+    let moflg = &modifiable && &modified ? "[+]" : ""
+    let prflg = &previewwindow ? "[Preview]" : ""
+    return roflg . moflg . prflg
+endfunction "}}}
+function! LightLineInfo() "{{{
+    if bufname('%') == '__Tag_List__'
+        return ""
+    endif
+    let enc = &fileencoding
+    " &bomb: 1=with BOM / 0=no BOM
+    if enc == "utf-8" && &bomb
+        let enc = &fileencoding . "b"
+    endif
+    "return "[" . &fileformat . "][" . &fileencoding . "]" . "<" . &filetype . ">"
+    return "[" . &fileformat . "][" . enc . "]" . "<" . &filetype . ">"
+endfunction "}}}
+function! LightLineLine() "{{{
+    " ヴァーチャルカラム？ -> <TAB>や全角が入ると変わる
+    let ccol = col('.')
+    "let vcol = virtcol('.')
+    "if ccol == vcol
+    "    let colstr = ccol
+    "else
+    "    let colstr = ccol . "|" . vcol
+    "endif
+    let cline = line('.')
+    let eline = line('$')
+    let lineper = cline*100/eline
+    return ccol . ":" . cline . "/" . eline . "(" . lineper . "%)"
+endfunction "}}}
+function! LightLineTabPre(n) "{{{
+    return ""
+endfunction "}}}
+function! LightLineTab(n) "{{{
+    " get filename of each tab number (lightline's function)
+    "let path = expand('%:t')
+    let path = lightline#tab#filename(a:n)
+    "if strlen(path) == 0
+    "    let path = "[No Name]"
+    "elseif path == "[No Name]"
+    if path == "[No Name]"
+        "not available lightline#tab#buftype()
+        let tabbuftype = gettabwinvar(a:n, tabpagewinnr(a:n), '&buftype')
+        if tabbuftype == 'quickfix'
+            let path = tabbuftype
+        endif
+    endif
+    let moflg = lightline#tab#modified(a:n)
+    return path . " " . moflg
+endfunction "}}}
+
+command! -bar LightlineUpdate call lightline#init() |
+    \ call lightline#colorscheme() |
+    \ call lightline#update()
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" catn.vim "{{{
+" add digits to line with start number 1
+function! CatDigits(nu)
+    let str = '%0' . a:nu . 'd:\  1'
+    execute "'<,'>Catn " . str
+    call DelEWS()
+endfunction "}}}
+vnoremap c2 :<C-u>call CatDigits("2")<CR>
+vnoremap c3 :<C-u>call CatDigits("3")<CR>
+vnoremap c4 :<C-u>call CatDigits("4")<CR>
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" indentLine {{{
+"let g:indentLine_fileTypeExclude = ['help', 'trophy', 'text']
+"let g:indentLine_char_list = ['|', '¦', '┆', '┊']
+"let g:indentLine_char_list = '|'
+"let g:indentLine_char = 'c'
+"let g:indentLine_setConceal = 0
+
+" https://enoatu.com/blog/vim-json-indene-line/
+" jsonでsetConceal = 0 にする
+"autocmd BufNewFile,BufRead,BufEnter * :let g:indentLine_setConceal = (&ft=='json' ? 0 : 1)
+
+"nnoremap <F4> :IndentLinesToggle<CR> }}}
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" indent-guides
+nnoremap <F4> :IndentGuidesToggle<CR>
+"let g:indent_guides_enable_on_vim_startup = 1
+let g:indent_guides_enable_on_vim_startup = 0
+let g:indent_guides_start_level = 2
+let g:indent_guides_guide_size = 1
+let g:indent_guides_auto_colors = 0
+autocmd VimEnter,Colorscheme * :hi IndentGuidesOdd  ctermbg=236
+autocmd VimEnter,Colorscheme * :hi IndentGuidesEven ctermbg=237
+"function! SetIndentGuide()
+"    "let g:indent_guides_enable_on_vim_startup = 1
+"    :IndentGuidesEnable
+"endfunction
+augroup MyIndent
+    autocmd!
+    autocmd Filetype php,javascript,java,sql,sh,zsh,vim,python,c,h :IndentGuidesEnable
+augroup END
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" echo error message
+function! EchoErr(msg) "{{{
+    echohl WarningMsg | echomsg a:msg | echohl None
+endfunction "}}}
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" source indivisual host script
+if g:hname == 'C12400' || g:hname == 'XPS13' || g:hname == 'STYLEFREE358-MAC' || g:hname == 'STYLEFREE436-PC'
+    source $HOME/.vim/_tools/functions.vim
+"elseif g:hname == 'KANAB0000054-PC'
+"    source $HOME/.vim/_tools/kana.vim
+"elseif g:hname == 'lenovo-E130-001'
+"    source $HOME/.vim/_tools/codeutil.vim
+"elseif g:hname == 'D6FZXRBX' || g:hname == 'SYS-A1677'
+"    source $HOME/.vim/_tools/syri.vim
+"elseif g:hname == 'ROMEO'
+"    source $HOME/.vim/_tools/romeo.vim
+endif
+if g:hname == 'STYLEFREE358-MAC' || g:hname == 'STYLEFREE436-PC'
+    source $HOME/.vim/_tools/codeutil.vim
+endif
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" syntax,highligt情報
+" http://cohama.hateblo.jp/entry/2013/08/11/020849
+function! s:get_syn_id(transparent) "{{{
+    let synid = synID(line("."), col("."), 1)
+    if a:transparent
+        return synIDtrans(synid)
+    else
+        return synid
+    endif
+endfunction
+function! s:get_syn_attr(synid)
+    let name = synIDattr(a:synid, "name")
+    let ctermfg = synIDattr(a:synid, "fg", "cterm")
+    let ctermbg = synIDattr(a:synid, "bg", "cterm")
+    let guifg = synIDattr(a:synid, "fg", "gui")
+    let guibg = synIDattr(a:synid, "bg", "gui")
+    return {
+        \ "name": name,
+        \ "ctermfg": ctermfg,
+        \ "ctermbg": ctermbg,
+        \ "guifg": guifg,
+        \ "guibg": guibg}
+endfunction
+function! s:get_syn_info()
+    let baseSyn = s:get_syn_attr(s:get_syn_id(0))
+    echo "name: " . baseSyn.name .
+        \ " ctermfg: " . baseSyn.ctermfg .
+        \ " ctermbg: " . baseSyn.ctermbg .
+        \ " guifg: " . baseSyn.guifg .
+        \ " guibg: " . baseSyn.guibg
+    let linkedSyn = s:get_syn_attr(s:get_syn_id(1))
+    echo "link to"
+    echo "name: " . linkedSyn.name .
+        \ " ctermfg: " . linkedSyn.ctermfg .
+        \ " ctermbg: " . linkedSyn.ctermbg .
+        \ " guifg: " . linkedSyn.guifg .
+        \ " guibg: " . linkedSyn.guibg
+endfunction "}}}
+command! SyntaxInfo call s:get_syn_info()
+
+
+" カーソル下のhighlight情報を表示する
+function! s:get_syn_id(transparent) "{{{
+    let synid = synID(line('.'), col('.'), 1)
+    return a:transparent ? synIDtrans(synid) : synid
+endfunction
+function! s:get_syn_name(synid)
+    return synIDattr(a:synid, 'name')
+endfunction
+function! s:get_highlight_info()
+    execute "highlight " . s:get_syn_name(s:get_syn_id(0))
+    execute "highlight " . s:get_syn_name(s:get_syn_id(1))
+endfunction "}}}
+command! HighlightInfo call s:get_highlight_info()
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" colorscheme for 256 colors
+if !has('gui_running')
+    colorscheme my2
+    "colorscheme molokai
+endif
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" プラグインヘルプタグの更新(~/.vim/doc/にプラグインのヘルプを入れたら更新する)
+" :helpt(ags) ~/.vim/doc {{{
+" :BundleInstall で ~/.vim/Bundle/*/doc のtagは作ってくれない？
+"
+" .vbaプラグインのインストール
+" vi xxx.vba でvbaファイルを開く
+" :source % でインストール
+"
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" あまり使わないプラグインの使い方
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" sudo.vim (sudoで書き込み)
+" :w sudo:%
+"
+" VimCalc
+" :Calc
+" > :q  "VimCalcのバッファから抜ける
+"
+" プラグインの時間計測: see ~/.vim/calcplugin.vim
+"
+" ctags
+" :!ctags -R
+" <C-]> タグジャンプ
+" <C-t> 直前のタグに戻る
+" <C-w>} タグジャンプ先をプレビュー
+" <C-w><C-z> タグプレビューを閉じる
+" :pc タグプレビューを閉じる
+"
+" hz_ja.vim
+" :Hankaku	  Convert to HANKAKU.
+" :Zenkaku	  Convert to ZENKAKU.
+"
+" catn.vim
+" http://nanasi.jp/articles/vim/catn_vim.html
+" :'<,'>Catn {フォーマット} {開始値}
+" 数値8桁、0埋めのフォーマット
+" :%Catn %08d: 500
+" 数値8桁、0埋めのフォーマット。間に1つスペースを入れる。
+" :%Catn %08d:\  500 }}}
+
+" EOF  vim:set ft=vim fdm=marker cms=\ "%s:
